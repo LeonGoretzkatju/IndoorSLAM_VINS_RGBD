@@ -42,6 +42,19 @@ double last_imu_t = 0;
 
 void predict(const sensor_msgs::ImuConstPtr &imu_msg)
 {
+
+    static Eigen::Matrix4d gyro_calib,acc_calib;
+
+    acc_calib <<       1.0129998922348022,     1.6299745067954063e-02, -1.6567818820476532e-02, -2.3803437128663063e-02,
+            9.0558832744136453e-04, 1.0179165601730347,     -8.2402275875210762e-03, -9.5768600702285767e-02,
+            -2.2675324231386185e-02,6.7262286320328712e-03,  1.0164324045181274e+00,  2.4007377028465271e-01,
+            0.000000,               0.000000 ,                0.000000 ,              1.000000 ;
+
+    gyro_calib <<      1.000000,            0.000000,            0.000000,         -6.7636385210789740e-05,
+            0.000000,            1.000000,            0.000000,         -9.5424675237154588e-06,
+            0.000000,            0.000000,            1.000000,         -1.7504280549474061e-05,
+            0.000000,            0.000000,            0.000000,         1.000000000000000000000;
+
     double t = imu_msg->header.stamp.toSec();
     if (init_imu)
     {
@@ -52,14 +65,36 @@ void predict(const sensor_msgs::ImuConstPtr &imu_msg)
     double dt = t - latest_time;
     latest_time = t;
 
-    double dx = imu_msg->linear_acceleration.x;
-    double dy = imu_msg->linear_acceleration.y;
-    double dz = imu_msg->linear_acceleration.z;
+    Eigen::Vector4d imu_gyro,imu_acc;
+    imu_gyro(0) = imu_msg->angular_velocity.x;
+    imu_gyro(1) = imu_msg->angular_velocity.y;
+    imu_gyro(2) = imu_msg->angular_velocity.z;
+    imu_gyro(3) = 1.0f;
+
+    imu_acc(0) = imu_msg->linear_acceleration.x;
+    imu_acc(1) = imu_msg->linear_acceleration.y;
+    imu_acc(2) = imu_msg->linear_acceleration.z;
+    imu_acc(3) = 1.0f;
+
+    imu_gyro = gyro_calib * imu_gyro;
+    imu_acc = acc_calib * imu_acc;
+
+    // imu_msg->angular_velocity.x = imu_gyro(0);
+    // imu_msg->angular_velocity.y = imu_gyro(1);
+    // imu_msg->angular_velocity.z = imu_gyro(2);
+
+    // imu_msg->linear_acceleration.x = imu_acc(0);
+    // imu_msg->linear_acceleration.y = imu_acc(1);
+    // imu_msg->linear_acceleration.z = imu_acc(2);
+
+    double dx = imu_acc(0);
+    double dy = imu_acc(1);
+    double dz = imu_acc(2);
     Eigen::Vector3d linear_acceleration{dx, dy, dz};
 
-    double rx = imu_msg->angular_velocity.x;
-    double ry = imu_msg->angular_velocity.y;
-    double rz = imu_msg->angular_velocity.z;
+    double rx = imu_gyro(0);
+    double ry = imu_gyro(0);
+    double rz = imu_gyro(0);
     Eigen::Vector3d angular_velocity{rx, ry, rz};
 
     Eigen::Vector3d un_acc_0 = tmp_Q * (acc_0 - tmp_Ba) - estimator.g;

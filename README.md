@@ -1,3 +1,37 @@
+## VINS-RGBD for [OpenLORIS-Dataset](https://lifelong-robotic-vision.github.io/dataset/scene)
+Based on the open source SLAM frameworks [VINS-Mono](https://github.com/HKUST-Aerial-Robotics/VINS-Mono) and [VINS-RGBD](https://github.com/STAR-Center/VINS-RGBD), you can download the OpenLoris Datasets and test it in the VINS-RGBD.
+
+## How to run
+
+Ubuntu 16.04 & 18.04
+
+ROS Kinetic or Melodic
+
+Ceres-Solver
+
+Sophus
+
+```
+mkdir -p catkin_ws/src
+cd catkin_ws/src
+git clone https://github.com/LeonGoretzkatju/IndoorSLAM_VINS_RGBD
+cd ..
+catkin_make
+//Open one terminal
+roscore
+
+//Open one terminal
+roslaunch vins_estimator vins_rviz.launch
+
+//Open one terminal and go to the vins_estimator/launch folder 
+roslaunch openloris.launch
+
+//Open one terminal 
+rosbag play xxx.bag
+```
+
+
+
 ## RGBD-Inertial Trajectory Estimation and Mapping for Small Ground Rescue Robot
 Based one open source SLAM framework [VINS-Mono](https://github.com/HKUST-Aerial-Robotics/VINS-Mono).
 
